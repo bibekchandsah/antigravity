@@ -1,0 +1,51 @@
+admin will be able to generate new secret key and QR code and store it in the .env file
+
+
+notification detali "
+🕐 Time
+🌐 IP Address
+🏙️ City
+🗺️ Region
+🌍 Country (with country code)
+📍 Location (formatted)
+📮 Postal Code
+🕒 Timezone
+📡 ISP
+🏢 Organization
+📐 Coordinates (latitude, longitude)
+💻 Browser
+🖥️ Operating System
+📱 Device Type
+🌐 User Agent (truncated)
+🗣️ Accept Language
+🔑 Session ID
+"
+
+
+
+### sendgrid API key Steps
+1. Create an Account: Go to SendGrid.com and sign up for a free account.
+2. Verify Sender Identity:
+    - Go to Settings > Sender Authentication (https://app.sendgrid.com/settings/sender_auth/senders/new).
+    - Click Verify a Single Sender.
+    - Fill in your details (use the same email you put in EMAIL_USER in your .env).
+    - Verify your email by clicking the link sent to your inbox.
+3. Create API Key:
+    - Go to Settings > API Keys (https://app.sendgrid.com/settings/api_keys). 
+    - Click Create API Key.
+    - Give it a name (e.g., "My App").
+    - Select Full Access (easiest) or Restricted Access (select "Mail Send" permissions).
+    - Click Create & View.
+4. Copy the Key:
+    - IMPORTANT: Copy the key immediately (it starts with SG.). You won't see it again.
+    - Paste it into your .env file as SENDGRID_API_KEY=SG.xxxxxxxx....
+
+
+
+echo "# antigravity" >> README.md
+git init
+git add .
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/bibekchandsah/antigravity.git
+git push -u origin main
