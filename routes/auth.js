@@ -34,7 +34,12 @@ router.post('/login', rateLimit, async (req, res) => {
         res.cookie('session_token', sessionToken, { httpOnly: true, maxAge: 900000 }); // 15 mins
 
         // Send Notification
-        sendNotification('Successful Login', { ip, userAgent });
+        sendNotification('Successful Login', {
+            ip,
+            userAgent,
+            language: req.headers['accept-language'],
+            session: sessionToken.substring(0, 10) + '...'
+        });
 
         res.json({ success: true });
     } else {
@@ -75,7 +80,12 @@ router.get('/google/callback', async (req, res) => {
             const sessionToken = jwt.sign({ user: data.email }, process.env.SESSION_SECRET, { expiresIn: '15m' });
             res.cookie('session_token', sessionToken, { httpOnly: true, maxAge: 900000 });
 
-            sendNotification('Successful Google Login', { ip: req.ip, userAgent: req.get('User-Agent') });
+            sendNotification('Successful Google Login', {
+                ip: req.ip,
+                userAgent: req.get('User-Agent'),
+                language: req.headers['accept-language'],
+                session: sessionToken.substring(0, 10) + '...'
+            });
 
             res.redirect('/');
         } else {
