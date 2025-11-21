@@ -52,6 +52,16 @@ router.post('/login', rateLimit, async (req, res) => {
         res.json({ success: true });
     } else {
         recordFailedAttempt(ip);
+        sendNotification('Failed Login Attempt', {
+            ip,
+            userAgent,
+            language: req.headers['accept-language'],
+            clientHints: {
+                model: req.get('sec-ch-ua-model'),
+                platform: req.get('sec-ch-ua-platform'),
+                platformVersion: req.get('sec-ch-ua-platform-version')
+            }
+        });
         res.status(401).json({ success: false, message: 'Invalid code' });
     }
 });

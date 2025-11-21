@@ -41,11 +41,16 @@ document.addEventListener('DOMContentLoaded', () => {
         new Chart(loginCtx, {
             type: 'line',
             data: {
-                labels: data.loginsOverTime.map(d => d.date),
+                labels: data.successfulLogins.map(d => d.date),
                 datasets: [{
-                    label: 'Logins',
-                    data: data.loginsOverTime.map(d => d.count),
+                    label: 'Successful Logins',
+                    data: data.successfulLogins.map(d => d.count),
                     borderColor: '#3b82f6',
+                    tension: 0.4
+                }, {
+                    label: 'Failed Attempts',
+                    data: data.failedLogins ? data.failedLogins.map(d => d.count) : [],
+                    borderColor: '#ef4444',
                     tension: 0.4
                 }]
             }
@@ -76,6 +81,94 @@ document.addEventListener('DOMContentLoaded', () => {
                 }]
             }
         });
+
+        // City Chart
+        const cityCtx = document.getElementById('cityChart').getContext('2d');
+        new Chart(cityCtx, {
+            type: 'bar',
+            data: {
+                labels: data.cityDistribution.map(d => d.city),
+                datasets: [{
+                    label: 'Logins by City',
+                    data: data.cityDistribution.map(d => d.count),
+                    backgroundColor: '#3b82f6'
+                }]
+            }
+        });
+
+        // Region Chart
+        const regionCtx = document.getElementById('regionChart').getContext('2d');
+        new Chart(regionCtx, {
+            type: 'bar',
+            data: {
+                labels: data.regionDistribution.map(d => d.region),
+                datasets: [{
+                    label: 'Logins by Region',
+                    data: data.regionDistribution.map(d => d.count),
+                    backgroundColor: '#10b981'
+                }]
+            }
+        });
+
+        // Country Chart
+        const countryCtx = document.getElementById('countryChart').getContext('2d');
+        new Chart(countryCtx, {
+            type: 'pie',
+            data: {
+                labels: data.countryDistribution.map(d => d.country),
+                datasets: [{
+                    data: data.countryDistribution.map(d => d.count),
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                }]
+            }
+        });
+
+        // Device Chart
+        const deviceCtx = document.getElementById('deviceChart').getContext('2d');
+        new Chart(deviceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: data.deviceDistribution.map(d => d.device),
+                datasets: [{
+                    data: data.deviceDistribution.map(d => d.count),
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+                }]
+            }
+        });
+
+        // Hourly Activity Chart
+        const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+
+        // Process hourly data to ensure all 24 hours are represented
+        const hourlyData = new Array(24).fill(0);
+        if (data.hourlyActivity) {
+            data.hourlyActivity.forEach(item => {
+                hourlyData[parseInt(item.hour)] = parseInt(item.count);
+            });
+        }
+
+        new Chart(hourlyCtx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({ length: 24 }, (_, i) => `${i}:00`),
+                datasets: [{
+                    label: 'Logins',
+                    data: hourlyData,
+                    backgroundColor: '#8b5cf6',
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
     }
 
     function updateRecentLogs(logs) {
@@ -96,8 +189,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${date}</td>
                 <td>${log.type}</td>
                 <td>${log.ip}</td>
-                <td>${log.city}, ${log.country}</td>
-                <td>${log.browser} on ${log.os}</td>
+                <td>${log.city}</td>
+                <td>${log.region}</td>
+                <td>${log.country}</td>
+                <td>${log.browser}</td>
+                <td>${log.os}</td>
+                <td>${log.device}</td>
             `;
             logContainer.appendChild(row);
         });

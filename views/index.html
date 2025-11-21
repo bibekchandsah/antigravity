@@ -129,6 +129,26 @@
                         <h3>OS Distribution</h3>
                         <canvas id="osChart"></canvas>
                     </div>
+                    <div>
+                        <h3>City Distribution</h3>
+                        <canvas id="cityChart"></canvas>
+                    </div>
+                    <div>
+                        <h3>Region Distribution</h3>
+                        <canvas id="regionChart"></canvas>
+                    </div>
+                    <div>
+                        <h3>Country Distribution</h3>
+                        <canvas id="countryChart"></canvas>
+                    </div>
+                    <div>
+                        <h3>Device Distribution</h3>
+                        <canvas id="deviceChart"></canvas>
+                    </div>
+                    <div style="grid-column: 1 / -1;">
+                        <h3>Hourly Activity (24h)</h3>
+                        <canvas id="hourlyChart"></canvas>
+                    </div>
                 </div>
             </div>
 
@@ -140,13 +160,17 @@
                             <th>Time</th>
                             <th>Event</th>
                             <th>IP Address</th>
-                            <th>Location</th>
+                            <th>City</th>
+                            <th>Region</th>
+                            <th>Country</th>
+                            <th>Browser</th>
+                            <th>OS</th>
                             <th>Device</th>
                         </tr>
                     </thead>
                     <tbody id="activity-log">
                         <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading...</td>
+                            <td colspan="9" style="text-align: center; color: var(--text-muted);">Loading...</td>
                         </tr>
                     </tbody>
                 </table>

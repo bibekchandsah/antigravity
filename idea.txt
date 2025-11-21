@@ -42,6 +42,27 @@ notification detali "
 
 
 
+### PostgreSQL database
+1. Log in to Render: Go to dashboard.render.com.
+2. Create New: Click the "New +" button and select "PostgreSQL".
+3. Configure:
+    - Name: Give it a name (e.g., secure-auth-db).
+    - Region: Choose the same region as your web service (e.g., Singapore, Frankfurt).
+    - Instance Type: Select "Free".
+4. Create: Click "Create Database".
+5. Get Connection URL:
+    - Wait for it to be created (1-2 mins).
+    - Look for the "Internal Database URL" section.
+    - Copy the URL (it starts with postgres://...).
+6. Link to Web Service:
+    - Go to your Web Service dashboard on Render.
+    - Go to "Environment".
+    - Add a new Environment Variable:
+        - Key: DATABASE_URL
+        - Value: (Paste the URL you copied)
+    - Save Changes.
+
+
 echo "# antigravity" >> README.md
 git init
 git add .
@@ -56,6 +77,10 @@ git remote add origin https://github.com/bibekchandsah/antigravity.git
 git branch -M main
 git push -u origin main
 
+
+
+netstat -ano | findstr :3000
+taskkill /PID 12212 /F
 
 
 
