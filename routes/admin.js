@@ -22,7 +22,7 @@ router.get('/stats', (req, res) => {
         if (err) {
             return res.status(500).json({ error: err.message });
         }
-        res.json(stats);
+        res.json({ ...stats, uptime: process.uptime() });
     });
 });
 

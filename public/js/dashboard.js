@@ -48,8 +48,21 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             renderCharts(data);
             updateRecentLogs(data.recentLogs);
+            updateUptime(data.uptime);
         })
         .catch(err => console.error('Error fetching stats:', err));
+
+    function updateUptime(seconds) {
+        const uptimeElement = document.getElementById('uptime');
+        if (!uptimeElement) return;
+
+        if (typeof seconds !== 'number') return;
+
+        const hours = Math.floor(seconds / 3600);
+        const minutes = Math.floor((seconds % 3600) / 60);
+
+        uptimeElement.textContent = `${hours}h ${minutes}m`;
+    }
 
     // Helper function to hide loading indicator and show chart
     function hideLoading(chartId) {
@@ -376,11 +389,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let isSuccess = false;
             let eventText = log.type;
+
             if (log.type && log.type.startsWith('Successful')) {
                 isSuccess = true;
-                eventText = 'Login Success';
-            } else {
+            }
+
+            if (log.type === 'Successful Login') {
+                eventText = 'TOTP Login Success';
+            } else if (log.type === 'Successful Google Login') {
+                eventText = 'Google Login Success';
+            } else if (log.type === 'Failed Login Attempt') {
                 eventText = 'Login Failed';
+            } else if (log.type === 'Unauthorized Google Login Attempt') {
+                eventText = 'Google Login Failed';
             }
 
             const rowStatusClass = isSuccess ? 'event-success' : 'event-error';
@@ -413,21 +434,22 @@ document.addEventListener('DOMContentLoaded', () => {
             const row = document.createElement('tr');
             const date = new Date(log.timestamp).toLocaleString();
 
-            // Logic to determine success/failure from 'type' if 'success' boolean is missing
+            // Logic to determine success/failure from 'type'
             let isSuccess = false;
             let eventText = log.type;
 
-            // Check if log has 'success' property (from getStats processing?) or use 'type'
-            if (log.success !== undefined) {
-                isSuccess = log.success;
-                eventText = isSuccess ? 'Login Success' : 'Login Failed';
-            } else if (log.type) {
-                if (log.type.startsWith('Successful')) {
-                    isSuccess = true;
-                    eventText = 'Login Success';
-                } else {
-                    eventText = 'Login Failed';
-                }
+            if (log.type && log.type.startsWith('Successful')) {
+                isSuccess = true;
+            }
+
+            if (log.type === 'Successful Login') {
+                eventText = 'TOTP Login Success';
+            } else if (log.type === 'Successful Google Login') {
+                eventText = 'Google Login Success';
+            } else if (log.type === 'Failed Login Attempt') {
+                eventText = 'Login Failed';
+            } else if (log.type === 'Unauthorized Google Login Attempt') {
+                eventText = 'Google Login Failed';
             }
 
             const statusClass = isSuccess ? 'event-success' : 'event-error';
