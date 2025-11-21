@@ -3,7 +3,7 @@ const router = express.Router();
 const { verifySession } = require('../middleware/authMiddleware');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
-const { getStats } = require('../utils/db');
+const { getStats, getActivityLogs } = require('../utils/db');
 
 router.use(verifySession);
 
@@ -23,6 +23,18 @@ router.get('/stats', (req, res) => {
             return res.status(500).json({ error: err.message });
         }
         res.json(stats);
+    });
+});
+
+router.get('/activity-logs', (req, res) => {
+    const offset = parseInt(req.query.offset) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+
+    getActivityLogs(offset, limit, (err, logs) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ logs, offset, limit });
     });
 });
 

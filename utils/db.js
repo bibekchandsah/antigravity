@@ -95,7 +95,7 @@ const getStats = (callback) => {
         const regionQuery = `SELECT region, COUNT(*) as count FROM login_logs GROUP BY region`;
         const countryQuery = `SELECT country, COUNT(*) as count FROM login_logs GROUP BY country`;
         const deviceQuery = `SELECT device, COUNT(*) as count FROM login_logs GROUP BY device`;
-        const logsQuery = `SELECT * FROM login_logs ORDER BY timestamp DESC LIMIT 10`;
+        const logsQuery = `SELECT * FROM login_logs ORDER BY timestamp DESC LIMIT 20`;
 
         pgPool.query(successfulQuery, (err, resSuccess) => {
             if (err) return callback(err);
@@ -187,7 +187,7 @@ const getStats = (callback) => {
                                                 if (err) return callback(err);
                                                 stats.deviceDistribution = rows;
 
-                                                sqliteDb.all(`SELECT * FROM login_logs ORDER BY timestamp DESC LIMIT 10`, (err, rows) => {
+                                                sqliteDb.all(`SELECT * FROM login_logs ORDER BY timestamp DESC LIMIT 20`, (err, rows) => {
                                                     if (err) return callback(err);
                                                     stats.recentLogs = rows;
                                                     callback(null, stats);
@@ -205,4 +205,21 @@ const getStats = (callback) => {
     }
 };
 
-module.exports = { logLogin, getStats };
+// Get activity logs with pagination
+const getActivityLogs = (offset = 0, limit = 10, callback) => {
+    if (dbType === 'postgres') {
+        const query = `SELECT * FROM login_logs ORDER BY timestamp DESC LIMIT $1 OFFSET $2`;
+        pgPool.query(query, [limit, offset], (err, res) => {
+            if (err) return callback(err);
+            callback(null, res.rows);
+        });
+    } else {
+        const query = `SELECT * FROM login_logs ORDER BY timestamp DESC LIMIT ? OFFSET ?`;
+        sqliteDb.all(query, [limit, offset], (err, rows) => {
+            if (err) return callback(err);
+            callback(null, rows);
+        });
+    }
+};
+
+module.exports = { logLogin, getStats, getActivityLogs };

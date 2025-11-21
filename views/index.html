@@ -8,92 +8,12 @@
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .dashboard-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            width: 100%;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            padding: 1.5rem;
-            border-radius: 1rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .card h2,
-        .card h3 {
-            margin-top: 0;
-            font-size: 1.25rem;
-            border-bottom: 1px solid #334155;
-            padding-bottom: 0.75rem;
-            margin-bottom: 1rem;
-        }
-
-        .stat {
-            font-size: 2rem;
-            font-weight: 600;
-            color: var(--primary);
-        }
-
-        .btn {
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-            transition: background-color 0.2s;
-        }
-
-        .btn-danger {
-            background-color: var(--error);
-            color: white;
-        }
-
-        .btn-primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        th,
-        td {
-            text-align: left;
-            padding: 0.75rem;
-            border-bottom: 1px solid #334155;
-        }
-
-        th {
-            color: var(--text-muted);
-            font-weight: 500;
-        }
-    </style>
 </head>
 
 <body>
     <div class="dashboard-container">
         <div class="header">
-            <h1>Admin Dashboard</h1>
+            <h1>Login Analytics</h1>
             <button id="logout-btn" class="btn btn-danger">Logout</button>
         </div>
 
@@ -101,59 +21,121 @@
             <div class="card">
                 <h2>System Status</h2>
                 <div class="stat">Active</div>
-                <p>Uptime: <span id="uptime">0h 0m</span></p>
+                <p style="color: var(--text-muted); margin-top: 0.5rem;">Uptime: <span id="uptime">0h 0m</span></p>
             </div>
 
             <div class="card">
-                <h2>Security</h2>
-                <button id="setup-totp" class="btn btn-primary">Setup New TOTP</button>
-                <div id="qr-container" style="margin-top: 1rem; display: none;">
-                    <img id="qr-code" src="" alt="QR Code" style="width: 200px; height: 200px;">
-                    <p>Secret: <code id="secret-key"></code></p>
-                </div>
-            </div>
-
-            <!-- Charts Section -->
-            <div class="card" style="grid-column: 1 / -1;">
-                <h2>Login Analytics</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                    <div>
-                        <h3>Logins (Last 7 Days)</h3>
-                        <canvas id="loginChart"></canvas>
+                <div class="security-content">
+                    <div class="security-left">
+                        <h2>Security</h2>
+                        <button id="setup-totp" class="btn btn-primary">Setup New TOTP</button>
+                        <div id="secret-placeholder" class="placeholder-dashed secret-placeholder"></div>
+                        <p class="secret-text">Secret: <code id="secret-key"></code></p>
                     </div>
-                    <div>
-                        <h3>Browser Distribution</h3>
-                        <canvas id="browserChart"></canvas>
-                    </div>
-                    <div>
-                        <h3>OS Distribution</h3>
-                        <canvas id="osChart"></canvas>
-                    </div>
-                    <div>
-                        <h3>City Distribution</h3>
-                        <canvas id="cityChart"></canvas>
-                    </div>
-                    <div>
-                        <h3>Region Distribution</h3>
-                        <canvas id="regionChart"></canvas>
-                    </div>
-                    <div>
-                        <h3>Country Distribution</h3>
-                        <canvas id="countryChart"></canvas>
-                    </div>
-                    <div>
-                        <h3>Device Distribution</h3>
-                        <canvas id="deviceChart"></canvas>
-                    </div>
-                    <div style="grid-column: 1 / -1;">
-                        <h3>Hourly Activity (24h)</h3>
-                        <canvas id="hourlyChart"></canvas>
+                    <div class="qr-wrapper">
+                        <div id="qr-placeholder" class="placeholder-dashed qr-placeholder"></div>
+                        <div id="qr-container" class="qr-container-right">
+                            <img id="qr-code" src="" alt="QR Code">
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="chart-grid">
+            <div class="card" style="grid-column: 1 / -1;">
+                <h3>Logins (Last 7 Days)</h3>
+                <div class="chart-container">
+                    <div class="chart-loading">
+                        <div class="spinner"></div>
+                        <p>Loading chart...</p>
+                    </div>
+                    <canvas id="loginChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Browser Distribution</h3>
+                <div class="chart-container">
+                    <div class="chart-loading">
+                        <div class="spinner"></div>
+                        <p>Loading chart...</p>
+                    </div>
+                    <canvas id="browserChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>OS Distribution</h3>
+                <div class="chart-container">
+                    <div class="chart-loading">
+                        <div class="spinner"></div>
+                        <p>Loading chart...</p>
+                    </div>
+                    <canvas id="osChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>City Distribution</h3>
+                <div class="chart-container">
+                    <div class="chart-loading">
+                        <div class="spinner"></div>
+                        <p>Loading chart...</p>
+                    </div>
+                    <canvas id="cityChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Region Distribution</h3>
+                <div class="chart-container">
+                    <div class="chart-loading">
+                        <div class="spinner"></div>
+                        <p>Loading chart...</p>
+                    </div>
+                    <canvas id="regionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Country Distribution</h3>
+                <div class="chart-container">
+                    <div class="chart-loading">
+                        <div class="spinner"></div>
+                        <p>Loading chart...</p>
+                    </div>
+                    <canvas id="countryChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Device Distribution</h3>
+                <div class="chart-container">
+                    <div class="chart-loading">
+                        <div class="spinner"></div>
+                        <p>Loading chart...</p>
+                    </div>
+                    <canvas id="deviceChart"></canvas>
+                </div>
+            </div>
 
             <div class="card" style="grid-column: 1 / -1;">
-                <h2>Recent Activity</h2>
+                <h3>Hourly Activity (24h)</h3>
+                <div class="chart-container">
+                    <div class="chart-loading">
+                        <div class="spinner"></div>
+                        <p>Loading chart...</p>
+                    </div>
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 2rem;">
+            <h2>Recent Activity</h2>
+            <div class="table-container" id="activity-table-container">
                 <table>
                     <thead>
                         <tr>
@@ -174,6 +156,10 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+            <div id="table-loading" style="display: none; text-align: center; padding: 1rem;">
+                <div class="spinner" style="margin: 0 auto;"></div>
+                <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.875rem;">Loading more...</p>
             </div>
         </div>
     </div>
