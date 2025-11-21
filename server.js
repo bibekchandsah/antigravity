@@ -8,7 +8,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Trust Proxy for Render/Heroku
-app.set('trust proxy', 1);
+app.set('trust proxy', true);
 
 // Middleware
 app.use(express.json());

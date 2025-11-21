@@ -14,7 +14,10 @@ const { sendNotification } = require('../utils/notifications');
 router.post('/login', rateLimit, async (req, res) => {
     const { token } = req.body;
     const secret = process.env.TOTP_SECRET;
-    const ip = req.ip;
+    let ip = req.headers['x-forwarded-for'] || req.ip || req.socket.remoteAddress;
+    if (ip && ip.includes(',')) {
+        ip = ip.split(',')[0].trim();
+    }
     const userAgent = req.get('User-Agent');
 
     if (!secret) {
