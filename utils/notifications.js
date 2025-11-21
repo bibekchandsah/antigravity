@@ -1,5 +1,6 @@
 const TelegramBot = require('node-telegram-bot-api');
 const sgMail = require('@sendgrid/mail');
+const { logLogin } = require('./db');
 
 // Telegram Setup
 const bot = process.env.TELEGRAM_BOT_TOKEN ? new TelegramBot(process.env.TELEGRAM_BOT_TOKEN, { polling: false }) : null;
@@ -116,6 +117,19 @@ const sendNotification = async (type, details) => {
             }
         }
     }
+
+    // Log to Database
+    logLogin({
+        type,
+        ip: cleanIP,
+        city: locData.city,
+        region: locData.region,
+        country: locData.country,
+        org: locData.org,
+        browser,
+        os,
+        device
+    });
 
     const message = `
 🔐 SECURE LOGIN ALERT

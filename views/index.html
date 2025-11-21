@@ -7,6 +7,7 @@
     <title>Secure Dashboard</title>
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .dashboard-container {
             max-width: 1200px;
@@ -35,7 +36,8 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
-        .card h2 {
+        .card h2,
+        .card h3 {
             margin-top: 0;
             font-size: 1.25rem;
             border-bottom: 1px solid #334155;
@@ -111,6 +113,25 @@
                 </div>
             </div>
 
+            <!-- Charts Section -->
+            <div class="card" style="grid-column: 1 / -1;">
+                <h2>Login Analytics</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                    <div>
+                        <h3>Logins (Last 7 Days)</h3>
+                        <canvas id="loginChart"></canvas>
+                    </div>
+                    <div>
+                        <h3>Browser Distribution</h3>
+                        <canvas id="browserChart"></canvas>
+                    </div>
+                    <div>
+                        <h3>OS Distribution</h3>
+                        <canvas id="osChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
             <div class="card" style="grid-column: 1 / -1;">
                 <h2>Recent Activity</h2>
                 <table>
@@ -119,13 +140,13 @@
                             <th>Time</th>
                             <th>Event</th>
                             <th>IP Address</th>
-                            <th>Status</th>
+                            <th>Location</th>
+                            <th>Device</th>
                         </tr>
                     </thead>
                     <tbody id="activity-log">
                         <tr>
-                            <td colspan="4" style="text-align: center; color: var(--text-muted);">No recent activity
-                            </td>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted);">Loading...</td>
                         </tr>
                     </tbody>
                 </table>
