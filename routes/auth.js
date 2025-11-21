@@ -41,7 +41,12 @@ router.post('/login', rateLimit, async (req, res) => {
             ip,
             userAgent,
             language: req.headers['accept-language'],
-            session: sessionToken.substring(0, 10) + '...'
+            session: sessionToken.substring(0, 10) + '...',
+            clientHints: {
+                model: req.get('sec-ch-ua-model'),
+                platform: req.get('sec-ch-ua-platform'),
+                platformVersion: req.get('sec-ch-ua-platform-version')
+            }
         });
 
         res.json({ success: true });
@@ -87,7 +92,12 @@ router.get('/google/callback', async (req, res) => {
                 ip: req.ip,
                 userAgent: req.get('User-Agent'),
                 language: req.headers['accept-language'],
-                session: sessionToken.substring(0, 10) + '...'
+                session: sessionToken.substring(0, 10) + '...',
+                clientHints: {
+                    model: req.get('sec-ch-ua-model'),
+                    platform: req.get('sec-ch-ua-platform'),
+                    platformVersion: req.get('sec-ch-ua-platform-version')
+                }
             });
 
             res.redirect('/');
