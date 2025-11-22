@@ -33,8 +33,9 @@ router.post('/login', rateLimit, async (req, res) => {
 
     if (verified) {
         resetAttempts(ip);
-        const sessionToken = jwt.sign({ user: 'admin' }, process.env.SESSION_SECRET, { expiresIn: '15m' });
-        res.cookie('session_token', sessionToken, { httpOnly: true, maxAge: 900000 }); // 15 mins
+        const sessionTimeout = process.env.SESSION_TIMEOUT || 15;
+        const sessionToken = jwt.sign({ user: 'admin' }, process.env.SESSION_SECRET, { expiresIn: `${sessionTimeout}m` });
+        res.cookie('session_token', sessionToken, { httpOnly: true, maxAge: sessionTimeout * 60 * 1000 });
 
         // Send Notification
         sendNotification('Successful Login', {
@@ -95,8 +96,9 @@ router.get('/google/callback', async (req, res) => {
         const { data } = await oauth2.userinfo.get();
 
         if (data.email === process.env.ALLOWED_EMAIL) {
-            const sessionToken = jwt.sign({ user: data.email }, process.env.SESSION_SECRET, { expiresIn: '15m' });
-            res.cookie('session_token', sessionToken, { httpOnly: true, maxAge: 900000 });
+            const sessionTimeout = process.env.SESSION_TIMEOUT || 15;
+            const sessionToken = jwt.sign({ user: data.email }, process.env.SESSION_SECRET, { expiresIn: `${sessionTimeout}m` });
+            res.cookie('session_token', sessionToken, { httpOnly: true, maxAge: sessionTimeout * 60 * 1000 });
 
             sendNotification('Successful Google Login', {
                 ip: req.ip,

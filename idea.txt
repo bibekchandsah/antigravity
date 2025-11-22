@@ -1,5 +1,6 @@
 admin will be able to generate new secret key and QR code and store it in the .env file
-
+allow admin to clear time lock of any user
+allow admin to clear failed attempt of any user
 
 notification detali "
 🕐 Time

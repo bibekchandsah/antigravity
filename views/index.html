@@ -164,6 +164,28 @@
         </div>
     </div>
     <script src="/js/dashboard.js"></script>
+    <script>
+        // Auto-Logout Logic
+        const sessionTimeoutMinutes = <%= sessionTimeout %>;
+        const timeoutDuration = sessionTimeoutMinutes * 60 * 1000;
+        let logoutTimer;
+
+        function startLogoutTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(() => {
+                window.location.href = '/auth/login?error=Session Expired';
+            }, timeoutDuration);
+        }
+
+        // Reset timer on user activity
+        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+        events.forEach(event => {
+            document.addEventListener(event, startLogoutTimer);
+        });
+
+        // Initial start
+        startLogoutTimer();
+    </script>
 </body>
 
 </html>

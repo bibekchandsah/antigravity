@@ -1,6 +1,6 @@
 const rateLimit = new Map();
 
-const MAX_ATTEMPTS = 5;
+const MAX_ATTEMPTS = process.env.MAX_ATTEMPT || 5;
 const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minutes
 
 const checkRateLimit = (ip) => {
