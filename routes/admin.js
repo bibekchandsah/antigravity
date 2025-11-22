@@ -38,4 +38,19 @@ router.get('/activity-logs', (req, res) => {
     });
 });
 
+const { getLockedUsers, resetAttempts } = require('../utils/rateLimiter');
+
+router.get('/locked-users', (req, res) => {
+    const lockedUsers = getLockedUsers();
+    res.json(lockedUsers);
+});
+
+router.post('/unlock-user', (req, res) => {
+    const { ip } = req.body;
+    if (!ip) return res.status(400).json({ error: 'IP address is required' });
+
+    resetAttempts(ip);
+    res.json({ success: true, message: `User ${ip} unlocked` });
+});
+
 module.exports = router;

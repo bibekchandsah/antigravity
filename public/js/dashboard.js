@@ -468,4 +468,67 @@ document.addEventListener('DOMContentLoaded', () => {
             tbody.appendChild(row);
         });
     }
+    // Fetch Locked Users
+    fetchLockedUsers();
+
+    function fetchLockedUsers() {
+        fetch('/admin/locked-users')
+            .then(response => response.json())
+            .then(users => {
+                renderLockedUsers(users);
+            })
+            .catch(err => console.error('Error fetching locked users:', err));
+    }
+
+    function renderLockedUsers(users) {
+        const tbody = document.getElementById('locked-users-table');
+        tbody.innerHTML = '';
+
+        if (!users || users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align: center; color: var(--text-muted);">No locked users</td></tr>';
+            return;
+        }
+
+        users.forEach(user => {
+            const row = document.createElement('tr');
+            const lockedUntil = new Date(user.lockedUntil).toLocaleTimeString();
+
+            row.innerHTML = `
+                <td>${user.ip}</td>
+                <td>${lockedUntil}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm unlock-btn" data-ip="${user.ip}">Unlock</button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add event listeners to unlock buttons
+        document.querySelectorAll('.unlock-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const ip = e.target.dataset.ip;
+                unlockUser(ip);
+            });
+        });
+    }
+
+    async function unlockUser(ip) {
+        try {
+            const response = await fetch('/admin/unlock-user', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ip })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                // Refresh the list
+                fetchLockedUsers();
+            } else {
+                alert('Failed to unlock user');
+            }
+        } catch (err) {
+            console.error('Error unlocking user:', err);
+        }
+    }
 });

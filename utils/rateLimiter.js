@@ -36,4 +36,15 @@ const resetAttempts = (ip) => {
     rateLimit.delete(ip);
 };
 
-module.exports = { checkRateLimit, recordFailedAttempt, resetAttempts };
+const getLockedUsers = () => {
+    const lockedUsers = [];
+    const now = Date.now();
+    for (const [ip, record] of rateLimit.entries()) {
+        if (record.lockedUntil && record.lockedUntil > now) {
+            lockedUsers.push({ ip, lockedUntil: record.lockedUntil });
+        }
+    }
+    return lockedUsers;
+};
+
+module.exports = { checkRateLimit, recordFailedAttempt, resetAttempts, getLockedUsers };
