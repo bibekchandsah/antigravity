@@ -52,7 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('google-login').addEventListener('click', () => {
-        window.location.href = '/auth/google';
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirectUrl = urlParams.get('redirect');
+        let target = '/auth/google';
+        if (redirectUrl) {
+            target += `?redirect=${encodeURIComponent(redirectUrl)}`;
+        }
+        window.location.href = target;
     });
 
     let countdownInterval;
@@ -109,7 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 message.textContent = 'Access Granted';
                 message.className = 'message success';
                 inputs.forEach(i => i.classList.add('filled'));
-                setTimeout(() => window.location.href = '/', 1000);
+
+                const urlParams = new URLSearchParams(window.location.search);
+                const redirectUrl = urlParams.get('redirect') || '/';
+
+                setTimeout(() => window.location.href = redirectUrl, 1000);
             } else {
                 if (data.lockedUntil) {
                     startCountdown(data.lockedUntil);

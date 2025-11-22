@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+const fs = require('fs');
 const useragent = require('useragent');
 
 const app = express();
@@ -31,7 +32,41 @@ app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 
 // Serve projects folder with authentication
-app.use('/projects', verifySession, express.static(path.join(__dirname, 'projects')));
+// Serve projects folder with authentication and script injection
+app.use('/projects', verifySession, (req, res, next) => {
+    // Check if request is for HTML or directory (which might serve index.html)
+    const isHtml = req.path.endsWith('.html');
+    const isDir = req.path.endsWith('/') || !path.extname(req.path);
+
+    if (isHtml || isDir) {
+        let filePath = path.join(__dirname, 'projects', req.path);
+
+        // Handle directory index
+        if (isDir) {
+            // If it's a directory, try to find index.html
+            if (fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory()) {
+                filePath = path.join(filePath, 'index.html');
+            } else if (!path.extname(filePath)) {
+                // If it's a path without extension that isn't a dir (e.g. /projects/foo), try adding .html
+                if (fs.existsSync(filePath + '.html')) {
+                    filePath = filePath + '.html';
+                }
+            }
+        }
+
+        if (fs.existsSync(filePath) && fs.lstatSync(filePath).isFile() && filePath.endsWith('.html')) {
+            fs.readFile(filePath, 'utf8', (err, data) => {
+                if (err) return next(err);
+
+                // Inject script before closing body tag
+                const injectedContent = data.replace('</body>', '<script src="/js/session-keepalive.js"></script></body>');
+                res.send(injectedContent);
+            });
+            return;
+        }
+    }
+    next();
+}, express.static(path.join(__dirname, 'projects')));
 
 app.use('/', indexRoutes);
 

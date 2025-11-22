@@ -5,7 +5,8 @@ const { getSession, updateSessionActivity } = require('../utils/db');
 const verifySession = (req, res, next) => {
     const token = req.cookies.session_token;
     if (!token) {
-        return res.redirect('/auth/login');
+        const redirectUrl = encodeURIComponent(req.originalUrl);
+        return res.redirect(`/auth/login?redirect=${redirectUrl}`);
     }
     try {
         const decoded = jwt.verify(token, process.env.SESSION_SECRET);
@@ -16,7 +17,8 @@ const verifySession = (req, res, next) => {
                 if (err || !session) {
                     // Session revoked or invalid
                     res.clearCookie('session_token');
-                    return res.redirect('/auth/login?error=Session Revoked');
+                    const redirectUrl = encodeURIComponent(req.originalUrl);
+                    return res.redirect(`/auth/login?error=Session Revoked&redirect=${redirectUrl}`);
                 }
 
                 // Update Activity

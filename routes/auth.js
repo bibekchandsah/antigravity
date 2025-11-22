@@ -106,12 +106,13 @@ const oauth2Client = new google.auth.OAuth2(
 
 router.get('/google', (req, res) => {
     const scopes = ['https://www.googleapis.com/auth/userinfo.email'];
-    const url = oauth2Client.generateAuthUrl({ access_type: 'offline', scope: scopes });
+    const state = req.query.redirect ? JSON.stringify({ redirect: req.query.redirect }) : undefined;
+    const url = oauth2Client.generateAuthUrl({ access_type: 'offline', scope: scopes, state });
     res.redirect(url);
 });
 
 router.get('/google/callback', async (req, res) => {
-    const { code } = req.query;
+    const { code, state } = req.query;
     try {
         const { tokens } = await oauth2Client.getToken(code);
         oauth2Client.setCredentials(tokens);
@@ -120,9 +121,14 @@ router.get('/google/callback', async (req, res) => {
         const { data } = await oauth2.userinfo.get();
 
         if (data.email === process.env.ALLOWED_EMAIL) {
-            const sessionTimeout = process.env.SESSION_TIMEOUT || 15;
+            const sessionTimeout = parseInt(process.env.SESSION_TIMEOUT) || 15;
             const sessionToken = jwt.sign({ user: data.email }, process.env.SESSION_SECRET, { expiresIn: `${sessionTimeout}m` });
-            res.cookie('session_token', sessionToken, { httpOnly: true, maxAge: sessionTimeout * 60 * 1000 });
+            res.cookie('session_token', sessionToken, {
+                httpOnly: true,
+                maxAge: sessionTimeout * 60 * 1000,
+                path: '/',
+                sameSite: 'Lax'
+            });
 
             sendNotification('Successful Google Login', {
                 ip: req.ip,
@@ -136,7 +142,17 @@ router.get('/google/callback', async (req, res) => {
                 }
             });
 
-            res.redirect('/');
+            let redirectUrl = '/';
+            if (state) {
+                try {
+                    const stateObj = JSON.parse(state);
+                    if (stateObj.redirect) redirectUrl = stateObj.redirect;
+                } catch (e) {
+                    console.error('Error parsing state:', e);
+                }
+            }
+
+            res.redirect(redirectUrl);
         } else {
             sendNotification('Unauthorized Google Login Attempt', { ip: req.ip, userAgent: req.get('User-Agent'), email: data.email });
             res.redirect('/auth/login?error=Unauthorized Email');
