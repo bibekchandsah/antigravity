@@ -4,236 +4,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Dashboard</title>
+    <title>Projects - Secure Portal</title>
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .projects-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .header-section h1 {
+            margin: 0;
+            font-size: 2rem;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .project-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--text-primary);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+        }
+
+        .project-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .project-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-card h3 {
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .project-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: auto;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 1rem;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div class="dashboard-container">
-        <div class="header">
-            <h1>Login Analytics</h1>
-            <button id="logout-btn" class="btn btn-danger">Logout</button>
-        </div>
-
-        <div class="card-grid">
-            <div class="card">
-                <h2>System Status</h2>
-                <div class="stat">Active</div>
-                <p style="color: var(--text-muted); margin-top: 0.5rem;">Uptime: <span id="uptime">0h 0m</span></p>
+    <div class="projects-container">
+        <div class="header-section">
+            <div>
+                <h1>🚀 Projects</h1>
+                <p style="color: var(--text-muted); margin: 0.5rem 0 0;">Browse and access your secure projects</p>
             </div>
-
-            <div class="card">
-                <div class="security-content">
-                    <div class="security-left">
-                        <h2>Security</h2>
-                        <button id="setup-totp" class="btn btn-primary">Setup New TOTP</button>
-                        <div id="secret-placeholder" class="placeholder-dashed secret-placeholder"></div>
-                        <p class="secret-text">Secret: <code id="secret-key"></code></p>
-                    </div>
-                    <div class="qr-wrapper">
-                        <div id="qr-placeholder" class="placeholder-dashed qr-placeholder"></div>
-                        <div id="qr-container" class="qr-container-right">
-                            <img id="qr-code" src="" alt="QR Code">
-                        </div>
-                    </div>
-                </div>
+            <div class="header-actions">
+                <button id="admin-btn" class="btn btn-primary">📊 Admin Dashboard</button>
+                <button id="logout-btn" class="btn btn-danger">Logout</button>
             </div>
         </div>
 
-        <!-- Charts Section -->
-        <div class="chart-grid">
-            <div class="card" style="grid-column: 1 / -1;">
-                <h3>Logins (Last 7 Days)</h3>
-                <div class="chart-container">
-                    <div class="chart-loading">
-                        <div class="spinner"></div>
-                        <p>Loading chart...</p>
-                    </div>
-                    <canvas id="loginChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Browser Distribution</h3>
-                <div class="chart-container">
-                    <div class="chart-loading">
-                        <div class="spinner"></div>
-                        <p>Loading chart...</p>
-                    </div>
-                    <canvas id="browserChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>OS Distribution</h3>
-                <div class="chart-container">
-                    <div class="chart-loading">
-                        <div class="spinner"></div>
-                        <p>Loading chart...</p>
-                    </div>
-                    <canvas id="osChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>City Distribution</h3>
-                <div class="chart-container">
-                    <div class="chart-loading">
-                        <div class="spinner"></div>
-                        <p>Loading chart...</p>
-                    </div>
-                    <canvas id="cityChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Region Distribution</h3>
-                <div class="chart-container">
-                    <div class="chart-loading">
-                        <div class="spinner"></div>
-                        <p>Loading chart...</p>
-                    </div>
-                    <canvas id="regionChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Country Distribution</h3>
-                <div class="chart-container">
-                    <div class="chart-loading">
-                        <div class="spinner"></div>
-                        <p>Loading chart...</p>
-                    </div>
-                    <canvas id="countryChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>Device Distribution</h3>
-                <div class="chart-container">
-                    <div class="chart-loading">
-                        <div class="spinner"></div>
-                        <p>Loading chart...</p>
-                    </div>
-                    <canvas id="deviceChart"></canvas>
-                </div>
-            </div>
-
-            <div class="card" style="grid-column: 1 / -1;">
-                <h3>Hourly Activity (24h)</h3>
-                <div class="chart-container">
-                    <div class="chart-loading">
-                        <div class="spinner"></div>
-                        <p>Loading chart...</p>
-                    </div>
-                    <canvas id="hourlyChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Active Devices Section -->
-        <div class="card" style="margin-top: 2rem;">
-            <h2>Active Devices</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Device</th>
-                            <th>Browser</th>
-                            <th>OS</th>
-                            <th>IP Address</th>
-                            <th>Last Active</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="active-sessions-table">
-                        <tr>
-                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading sessions...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Locked Users Section -->
-        <div class="card" style="margin-top: 2rem;">
-            <h2>Locked Users</h2>
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>IP Address</th>
-                            <th>Locked Until</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="locked-users-table">
-                        <tr>
-                            <td colspan="3" style="text-align: center; color: var(--text-muted);">No locked users</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Recent Activity Section -->
-        <div class="card" style="margin-top: 2rem;">
-            <h2>Recent Activity</h2>
-            <div class="table-container" id="activity-table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Time</th>
-                            <th>Event</th>
-                            <th>IP Address</th>
-                            <th>City</th>
-                            <th>Region</th>
-                            <th>Country</th>
-                            <th>Browser</th>
-                            <th>OS</th>
-                            <th>Device</th>
-                        </tr>
-                    </thead>
-                    <tbody id="activity-log">
-                        <tr>
-                            <td colspan="9" style="text-align: center; color: var(--text-muted);">Loading...</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div id="table-loading" style="display: none; text-align: center; padding: 1rem;">
-                <div class="spinner" style="margin: 0 auto;"></div>
-                <p style="margin-top: 0.5rem; color: var(--text-muted); font-size: 0.875rem;">Loading more...</p>
+        <div id="projects-content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading projects...</p>
             </div>
         </div>
     </div>
-    <script src="/js/dashboard.js"></script>
+
     <script>
-        // Auto-Logout Logic
-        const sessionTimeoutMinutes = parseInt('<%= sessionTimeout %>');
-        // const sessionTimeoutMinutes = <%= sessionTimeout %>;
-        const timeoutDuration = sessionTimeoutMinutes * 60 * 1000;
-        let logoutTimer;
-
-        function startLogoutTimer() {
-            clearTimeout(logoutTimer);
-            logoutTimer = setTimeout(() => {
-                window.location.href = '/auth/login?error=Session Expired';
-            }, timeoutDuration);
-        }
-
-        // Reset timer on user activity
-        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
-        events.forEach(event => {
-            document.addEventListener(event, startLogoutTimer);
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            try {
+                await fetch('/auth/logout', { method: 'POST' });
+                window.location.href = '/auth/login';
+            } catch (err) {
+                console.error('Logout error:', err);
+                window.location.href = '/auth/login';
+            }
         });
 
-        // Initial start
-        startLogoutTimer();
+        // Admin dashboard navigation
+        document.getElementById('admin-btn').addEventListener('click', () => {
+            window.location.href = '/admin';
+        });
+
+        // Fetch and display projects
+        async function loadProjects() {
+            try {
+                const response = await fetch('/api/projects');
+                const projects = await response.json();
+
+                const container = document.getElementById('projects-content');
+
+                if (projects.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <h2>No Projects Found</h2>
+                            <p>Add projects to the <code>projects</code> folder to see them here.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const projectsHTML = projects.map((project, index) => {
+                    const icons = ['📁', '🎨', '⚡', '🔧', '💡', '🎯', '🚀', '⭐'];
+                    const icon = icons[index % icons.length];
+
+                    return `
+                        <a href="/projects/${encodeURIComponent(project.name)}/index.html" class="project-card">
+                            <div class="project-icon">${icon}</div>
+                            <h3>${project.displayName}</h3>
+                            <p>Click to open this project</p>
+                            <div class="project-meta">
+                                <span>📂 ${project.name}</span>
+                            </div>
+                        </a>
+                    `;
+                }).join('');
+
+                container.innerHTML = `<div class="projects-grid">${projectsHTML}</div>`;
+            } catch (err) {
+                console.error('Error loading projects:', err);
+                document.getElementById('projects-content').innerHTML = `
+                    <div class="empty-state">
+                        <h2>Error Loading Projects</h2>
+                        <p>Unable to load projects. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load projects on page load
+        loadProjects();
     </script>
+    <script src="/js/session-keepalive.js"></script>
 </body>
 
 </html>

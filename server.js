@@ -25,9 +25,14 @@ app.set('views', path.join(__dirname, 'views'));
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const indexRoutes = require('./routes/index');
+const { verifySession } = require('./middleware/authMiddleware');
 
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
+
+// Serve projects folder with authentication
+app.use('/projects', verifySession, express.static(path.join(__dirname, 'projects')));
+
 app.use('/', indexRoutes);
 
 // 404 Handler

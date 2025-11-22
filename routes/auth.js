@@ -33,7 +33,7 @@ router.post('/login', rateLimit, async (req, res) => {
 
     if (verified) {
         resetAttempts(ip);
-        const sessionTimeout = process.env.SESSION_TIMEOUT || 15;
+        const sessionTimeout = parseInt(process.env.SESSION_TIMEOUT) || 15;
 
         // Create Session
         const { v4: uuidv4 } = require('uuid');
@@ -54,7 +54,12 @@ router.post('/login', rateLimit, async (req, res) => {
         });
 
         const sessionToken = jwt.sign({ user: 'admin', sessionId }, process.env.SESSION_SECRET, { expiresIn: `${sessionTimeout}m` });
-        res.cookie('session_token', sessionToken, { httpOnly: true, maxAge: sessionTimeout * 60 * 1000 });
+        res.cookie('session_token', sessionToken, {
+            httpOnly: true,
+            maxAge: sessionTimeout * 60 * 1000,
+            path: '/',
+            sameSite: 'Lax'
+        });
 
         // Send Notification
         sendNotification('Successful Login', {

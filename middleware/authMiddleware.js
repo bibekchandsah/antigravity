@@ -23,9 +23,14 @@ const verifySession = (req, res, next) => {
                 updateSessionActivity(decoded.sessionId);
 
                 // Sliding Session: Refresh the token
-                const sessionTimeout = process.env.SESSION_TIMEOUT || 15;
+                const sessionTimeout = parseInt(process.env.SESSION_TIMEOUT) || 15;
                 const newToken = jwt.sign({ user: decoded.user, sessionId: decoded.sessionId }, process.env.SESSION_SECRET, { expiresIn: `${sessionTimeout}m` });
-                res.cookie('session_token', newToken, { httpOnly: true, maxAge: sessionTimeout * 60 * 1000 });
+                res.cookie('session_token', newToken, {
+                    httpOnly: true,
+                    maxAge: sessionTimeout * 60 * 1000,
+                    path: '/',
+                    sameSite: 'Lax'
+                });
 
                 req.user = decoded;
                 next();
@@ -35,6 +40,7 @@ const verifySession = (req, res, next) => {
             next();
         }
     } catch (err) {
+        console.error('Session verification failed:', err.message);
         res.redirect('/auth/login');
     }
 };
