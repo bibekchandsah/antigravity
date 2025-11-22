@@ -43,6 +43,17 @@ function initSqlite() {
         device TEXT,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+    sqliteDb.run(`CREATE TABLE IF NOT EXISTS active_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id TEXT UNIQUE,
+        user_id TEXT,
+        ip TEXT,
+        device TEXT,
+        browser TEXT,
+        os TEXT,
+        last_active DATETIME DEFAULT CURRENT_TIMESTAMP,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`);
 }
 
 function initPg() {
@@ -60,6 +71,19 @@ function initPg() {
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`, (err) => {
         if (err) console.error('Error creating PG table:', err.message);
+    });
+    pgPool.query(`CREATE TABLE IF NOT EXISTS active_sessions (
+        id SERIAL PRIMARY KEY,
+        session_id TEXT UNIQUE,
+        user_id TEXT,
+        ip TEXT,
+        device TEXT,
+        browser TEXT,
+        os TEXT,
+        last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`, (err) => {
+        if (err) console.error('Error creating PG session table:', err.message);
     });
 }
 
@@ -222,4 +246,67 @@ const getActivityLogs = (offset = 0, limit = 10, callback) => {
     }
 };
 
-module.exports = { logLogin, getStats, getActivityLogs };
+
+
+// Session Management
+const createSession = (session) => {
+    const { id, user_id, ip, device, browser, os } = session;
+    if (dbType === 'postgres') {
+        const query = `INSERT INTO active_sessions (session_id, user_id, ip, device, browser, os) VALUES ($1, $2, $3, $4, $5, $6)`;
+        pgPool.query(query, [id, user_id, ip, device, browser, os], (err) => {
+            if (err) console.error('Error creating session PG:', err.message);
+        });
+    } else {
+        const stmt = sqliteDb.prepare(`INSERT INTO active_sessions (session_id, user_id, ip, device, browser, os) VALUES (?, ?, ?, ?, ?, ?)`);
+        stmt.run(id, user_id, ip, device, browser, os, (err) => {
+            if (err) console.error('Error creating session SQLite:', err.message);
+        });
+        stmt.finalize();
+    }
+};
+
+const getSession = (sessionId, callback) => {
+    if (dbType === 'postgres') {
+        pgPool.query(`SELECT * FROM active_sessions WHERE session_id = $1`, [sessionId], (err, res) => {
+            if (err) return callback(err);
+            callback(null, res.rows[0]);
+        });
+    } else {
+        sqliteDb.get(`SELECT * FROM active_sessions WHERE session_id = ?`, [sessionId], (err, row) => {
+            if (err) return callback(err);
+            callback(null, row);
+        });
+    }
+};
+
+const updateSessionActivity = (sessionId) => {
+    if (dbType === 'postgres') {
+        pgPool.query(`UPDATE active_sessions SET last_active = CURRENT_TIMESTAMP WHERE session_id = $1`, [sessionId]);
+    } else {
+        sqliteDb.run(`UPDATE active_sessions SET last_active = CURRENT_TIMESTAMP WHERE session_id = ?`, [sessionId]);
+    }
+};
+
+const revokeSession = (sessionId, callback) => {
+    if (dbType === 'postgres') {
+        pgPool.query(`DELETE FROM active_sessions WHERE session_id = $1`, [sessionId], callback);
+    } else {
+        sqliteDb.run(`DELETE FROM active_sessions WHERE session_id = ?`, [sessionId], callback);
+    }
+};
+
+const getUserSessions = (userId, callback) => {
+    if (dbType === 'postgres') {
+        pgPool.query(`SELECT * FROM active_sessions WHERE user_id = $1 ORDER BY last_active DESC`, [userId], (err, res) => {
+            if (err) return callback(err);
+            callback(null, res.rows);
+        });
+    } else {
+        sqliteDb.all(`SELECT * FROM active_sessions WHERE user_id = ? ORDER BY last_active DESC`, [userId], (err, rows) => {
+            if (err) return callback(err);
+            callback(null, rows);
+        });
+    }
+};
+
+module.exports = { logLogin, getStats, getActivityLogs, createSession, getSession, updateSessionActivity, revokeSession, getUserSessions };

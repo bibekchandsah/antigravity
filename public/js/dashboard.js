@@ -531,4 +531,72 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Error unlocking user:', err);
         }
     }
+
+    // Fetch Active Sessions
+    fetchActiveSessions();
+
+    function fetchActiveSessions() {
+        fetch('/admin/sessions')
+            .then(response => response.json())
+            .then(sessions => {
+                renderActiveSessions(sessions);
+            })
+            .catch(err => console.error('Error fetching sessions:', err));
+    }
+
+    function renderActiveSessions(sessions) {
+        const tbody = document.getElementById('active-sessions-table');
+        tbody.innerHTML = '';
+
+        if (!sessions || sessions.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No active sessions</td></tr>';
+            return;
+        }
+
+        sessions.forEach(session => {
+            const row = document.createElement('tr');
+            const lastActive = new Date(session.last_active).toLocaleString();
+            const isCurrent = session.isCurrent ? '<span class="badge badge-success" style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px;">Current</span>' : '';
+            const revokeBtn = session.isCurrent ? '' : `<button class="btn btn-danger btn-sm revoke-btn" data-id="${session.session_id}">Revoke</button>`;
+
+            row.innerHTML = `
+                <td>${session.device} ${isCurrent}</td>
+                <td>${session.browser}</td>
+                <td>${session.os}</td>
+                <td>${session.ip}</td>
+                <td>${lastActive}</td>
+                <td>${revokeBtn}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        // Add event listeners to revoke buttons
+        document.querySelectorAll('.revoke-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const sessionId = e.target.dataset.id;
+                revokeSession(sessionId);
+            });
+        });
+    }
+
+    async function revokeSession(sessionId) {
+        if (!confirm('Are you sure you want to revoke this session?')) return;
+
+        try {
+            const response = await fetch('/admin/revoke-session', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId })
+            });
+            const result = await response.json();
+
+            if (result.success) {
+                fetchActiveSessions();
+            } else {
+                alert('Failed to revoke session');
+            }
+        } catch (err) {
+            console.error('Error revoking session:', err);
+        }
+    }
 });

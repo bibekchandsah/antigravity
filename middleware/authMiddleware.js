@@ -1,4 +1,6 @@
 const jwt = require('jsonwebtoken');
+const { checkRateLimit } = require('../utils/rateLimiter');
+const { getSession, updateSessionActivity } = require('../utils/db');
 
 const verifySession = (req, res, next) => {
     const token = req.cookies.session_token;
@@ -8,18 +10,34 @@ const verifySession = (req, res, next) => {
     try {
         const decoded = jwt.verify(token, process.env.SESSION_SECRET);
 
-        // Sliding Session: Refresh the token
-        const sessionTimeout = process.env.SESSION_TIMEOUT || 15;
-        const newToken = jwt.sign({ user: decoded.user }, process.env.SESSION_SECRET, { expiresIn: `${sessionTimeout}m` });
-        res.cookie('session_token', newToken, { httpOnly: true, maxAge: sessionTimeout * 60 * 1000 });
+        // Validate Session from DB
+        if (decoded.sessionId) {
+            getSession(decoded.sessionId, (err, session) => {
+                if (err || !session) {
+                    // Session revoked or invalid
+                    res.clearCookie('session_token');
+                    return res.redirect('/auth/login?error=Session Revoked');
+                }
 
-        next();
+                // Update Activity
+                updateSessionActivity(decoded.sessionId);
+
+                // Sliding Session: Refresh the token
+                const sessionTimeout = process.env.SESSION_TIMEOUT || 15;
+                const newToken = jwt.sign({ user: decoded.user, sessionId: decoded.sessionId }, process.env.SESSION_SECRET, { expiresIn: `${sessionTimeout}m` });
+                res.cookie('session_token', newToken, { httpOnly: true, maxAge: sessionTimeout * 60 * 1000 });
+
+                req.user = decoded;
+                next();
+            });
+        } else {
+            // Legacy token support (optional, or force logout)
+            next();
+        }
     } catch (err) {
         res.redirect('/auth/login');
     }
 };
-
-const { checkRateLimit } = require('../utils/rateLimiter');
 
 const rateLimit = (req, res, next) => {
     const ip = req.ip;

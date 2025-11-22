@@ -30,6 +30,7 @@
         "qrcode": "^1.5.3",
         "speakeasy": "^2.0.0",
         "sqlite3": "^5.1.7",
+        "ua-parser-js": "^2.0.6",
         "useragent": "^2.3.0"
     },
     "devDependencies": {

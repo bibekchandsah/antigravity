@@ -133,6 +133,32 @@
             </div>
         </div>
 
+        <!-- Active Devices Section -->
+        <div class="card" style="margin-top: 2rem;">
+            <h2>Active Devices</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Device</th>
+                            <th>Browser</th>
+                            <th>OS</th>
+                            <th>IP Address</th>
+                            <th>Last Active</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="active-sessions-table">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: var(--text-muted);">Loading sessions...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Locked Users Section -->
         <div class="card" style="margin-top: 2rem;">
             <h2>Locked Users</h2>
             <div class="table-container">
@@ -153,6 +179,7 @@
             </div>
         </div>
 
+        <!-- Recent Activity Section -->
         <div class="card" style="margin-top: 2rem;">
             <h2>Recent Activity</h2>
             <div class="table-container" id="activity-table-container">
@@ -186,7 +213,8 @@
     <script src="/js/dashboard.js"></script>
     <script>
         // Auto-Logout Logic
-        const sessionTimeoutMinutes = <%= sessionTimeout %>;
+        const sessionTimeoutMinutes = parseInt('<%= sessionTimeout %>');
+        // const sessionTimeoutMinutes = <%= sessionTimeout %>;
         const timeoutDuration = sessionTimeoutMinutes * 60 * 1000;
         let logoutTimer;
 

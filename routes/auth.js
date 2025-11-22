@@ -34,7 +34,26 @@ router.post('/login', rateLimit, async (req, res) => {
     if (verified) {
         resetAttempts(ip);
         const sessionTimeout = process.env.SESSION_TIMEOUT || 15;
-        const sessionToken = jwt.sign({ user: 'admin' }, process.env.SESSION_SECRET, { expiresIn: `${sessionTimeout}m` });
+
+        // Create Session
+        const { v4: uuidv4 } = require('uuid');
+        const { createSession } = require('../utils/db');
+        const UAParser = require('ua-parser-js');
+        const parser = new UAParser(userAgent);
+        const uaResult = parser.getResult();
+
+        const sessionId = uuidv4();
+
+        createSession({
+            id: sessionId,
+            user_id: 'admin', // or dynamic user id
+            ip,
+            device: uaResult.device.type ? (uaResult.device.vendor ? `${uaResult.device.vendor} ${uaResult.device.model}` : uaResult.device.type) : 'Desktop',
+            browser: uaResult.browser.name || 'Unknown',
+            os: uaResult.os.name || 'Unknown'
+        });
+
+        const sessionToken = jwt.sign({ user: 'admin', sessionId }, process.env.SESSION_SECRET, { expiresIn: `${sessionTimeout}m` });
         res.cookie('session_token', sessionToken, { httpOnly: true, maxAge: sessionTimeout * 60 * 1000 });
 
         // Send Notification
