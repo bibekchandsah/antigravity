@@ -26,26 +26,30 @@ app.set('views', path.join(__dirname, 'views'));
 const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const indexRoutes = require('./routes/index');
+const uploadRoutes = require('./routes/upload');
 const { verifySession } = require('./middleware/authMiddleware');
 
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 
-// Serve projects folder with authentication
 // Serve projects folder with authentication and script injection
 app.use('/projects', verifySession, (req, res, next) => {
     // Check if request is for HTML or directory (which might serve index.html)
     const isHtml = req.path.endsWith('.html');
     const isDir = req.path.endsWith('/') || !path.extname(req.path);
+    let filePath = path.join(__dirname, 'projects', req.path);
 
+    // 1. Handle Directory/HTML requests (with script injection)
     if (isHtml || isDir) {
-        let filePath = path.join(__dirname, 'projects', req.path);
-
         // Handle directory index
         if (isDir) {
-            // If it's a directory, try to find index.html
+            // If it's a directory, try to find index.html or public/index.html
             if (fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory()) {
-                filePath = path.join(filePath, 'index.html');
+                if (fs.existsSync(path.join(filePath, 'index.html'))) {
+                    filePath = path.join(filePath, 'index.html');
+                } else if (fs.existsSync(path.join(filePath, 'public', 'index.html'))) {
+                    filePath = path.join(filePath, 'public', 'index.html');
+                }
             } else if (!path.extname(filePath)) {
                 // If it's a path without extension that isn't a dir (e.g. /projects/foo), try adding .html
                 if (fs.existsSync(filePath + '.html')) {
@@ -65,8 +69,28 @@ app.use('/projects', verifySession, (req, res, next) => {
             return;
         }
     }
+
+    // 2. Handle Asset requests (CSS, JS, Images) - Check public folder if not found in root
+    if (!fs.existsSync(filePath)) {
+        // Try to find it in a 'public' subdirectory of the project
+        // Assumption: req.path is like /projectName/style.css
+        const parts = req.path.split('/').filter(p => p);
+        if (parts.length >= 2) {
+            const projectName = parts[0];
+            const assetPath = parts.slice(1).join('/');
+            const publicFilePath = path.join(__dirname, 'projects', projectName, 'public', assetPath);
+
+            if (fs.existsSync(publicFilePath)) {
+                return res.sendFile(publicFilePath);
+            }
+        }
+    }
+
     next();
 }, express.static(path.join(__dirname, 'projects')));
+
+// Mount upload routes (for API endpoints like /upload, /api/folders)
+app.use('/', uploadRoutes);
 
 app.use('/', indexRoutes);
 
