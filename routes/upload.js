@@ -3,25 +3,16 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 // Try to require multer from the project's node_modules, fallback to root if available
-let multer;
-try {
-    multer = require('../projects/upload/node_modules/multer');
-} catch (e) {
-    try {
-        multer = require('multer');
-    } catch (e2) {
-        console.error('Multer not found. Uploads will fail.');
-    }
-}
+const multer = require('multer');
 
 const { verifySession } = require('../middleware/authMiddleware');
 
 // Configure multer for file uploads
-const storage = multer ? multer.memoryStorage() : null;
-const upload = multer ? multer({
+const storage = multer.memoryStorage();
+const upload = multer({
     storage: storage,
     limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
-}) : { single: () => (req, res, next) => next() };
+});
 
 // GitHub API configuration
 // Load environment variables from the upload project's .env file if not already set

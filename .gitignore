@@ -9,7 +9,12 @@ coverage/
 # Production
 build/
 dist/
-projects/
+projects/encryption/
+projects/flip flop clock/
+projects/hacker prank/
+projects/iphone carosal/
+projects/test backend/
+projects/upload/
 
 # Misc
 .DS_Store

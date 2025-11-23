@@ -2,6 +2,7 @@ admin will be able to generate new secret key and QR code and store it in the .e
 allow admin to clear time lock of any user
 auto logout after 15 minutes of inactivity
 if user directly try to access the project specific url then it will show the login page and after successfull login it will redirect to the project specific url
+user can put any project in projects folder and it will be automatically served at /projects/YOUR_FOLDER_NAME/
 
 notification detali "
 🕐 Time

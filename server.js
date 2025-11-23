@@ -43,6 +43,11 @@ app.use('/projects', verifySession, (req, res, next) => {
     if (isHtml || isDir) {
         // Handle directory index
         if (isDir) {
+            // Redirect to trailing slash if missing, to ensure relative assets work
+            if (!req.path.endsWith('/') && fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory()) {
+                return res.redirect(req.originalUrl + '/');
+            }
+
             // If it's a directory, try to find index.html or public/index.html
             if (fs.existsSync(filePath) && fs.lstatSync(filePath).isDirectory()) {
                 if (fs.existsSync(path.join(filePath, 'index.html'))) {
