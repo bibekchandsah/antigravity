@@ -17,20 +17,42 @@ router.get('/admin', verifySession, (req, res) => {
 // API endpoint to list projects
 router.get('/api/projects', verifySession, (req, res) => {
     const projectsDir = path.join(__dirname, '../projects');
+    const projectsJsonPath = path.join(projectsDir, 'projects.json');
 
     try {
         if (!fs.existsSync(projectsDir)) {
             return res.json([]);
         }
 
+        // Read centralized metadata
+        let projectsMetadata = [];
+        if (fs.existsSync(projectsJsonPath)) {
+            try {
+                const fileContent = fs.readFileSync(projectsJsonPath, 'utf8');
+                projectsMetadata = JSON.parse(fileContent);
+            } catch (e) {
+                console.error('Error reading projects.json:', e);
+            }
+        }
+
         const projects = fs.readdirSync(projectsDir, { withFileTypes: true })
             .filter(dirent => dirent.isDirectory())
-            .map(dirent => ({
-                name: dirent.name,
-                displayName: dirent.name.split('-').map(word =>
-                    word.charAt(0).toUpperCase() + word.slice(1)
-                ).join(' ')
-            }));
+            .map(dirent => {
+                // Find metadata for this project
+                const metadata = projectsMetadata.find(p => p.name === dirent.name) || {};
+
+                return {
+                    name: dirent.name,
+                    displayName: metadata.displayName || dirent.name.split('-').map(word =>
+                        word.charAt(0).toUpperCase() + word.slice(1)
+                    ).join(' '),
+                    // description: metadata.description || 'No description available.',
+                    description: metadata.description || 'Click to view project.',
+                    icon: metadata.icon || null,
+                    hidden: metadata.hidden || false
+                };
+            })
+            .filter(project => !project.hidden);
 
         res.json(projects);
     } catch (err) {

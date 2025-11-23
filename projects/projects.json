@@ -1,0 +1,16 @@
+[
+    {
+        "name": "sample-project",
+        "displayName": "Sample Project Demo",
+        "description": "A demonstration of the new project metadata system.",
+        "icon": "✨",
+        "hidden": false
+    },
+    {
+        "name": "encryption",
+        "displayName": "Encryption Project",
+        "description": "A demonstration of the encryption metadata system.",
+        "icon": "/projects/encryption/favicon/ms-icon-310x310.png",
+        "hidden": false
+    }
+]
